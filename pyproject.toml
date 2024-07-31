@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "PlaylistBuilder"
+version = "0.1.0"
+description = "This tool is to build the playlist on different music platforms by re-using existing playlists or music compliations."
+authors = ["wannieman98 <74849806+wannieman98@users.noreply.github.com>"]
+readme = "README.md"
+
+packages = [
+    { include = "playlist_builder" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+google-api-python-client = "^2.138.0"
+google-auth-oauthlib = "^1.2.1"
+google-auth-httplib2 = "^0.2.0"
+typer = "^0.12.3"
+google-auth = "^2.32.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+black = "^24.4.2"
+mypy = "^1.11.1"
+
+[tool.black]
+line-length = 88
+
+[tool.mypy]
+files = ["playlist_builder/"]
+ignore_missing_imports = true
+
+[tool.poetry.scripts]
+playlist-builder = "playlist_builder.main:playlist_builder"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
