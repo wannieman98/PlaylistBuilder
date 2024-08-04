@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from playlist_builder.models import Playlist
+
 
 class MusicPlatformDAO(ABC):
     """
@@ -21,7 +23,7 @@ class MusicPlatformDAO(ABC):
         ...
 
     @abstractmethod
-    def get_playlist(self):
+    def get_playlist(self, playlist_id: str) -> Playlist:
         """
         Retrieve a playlist from the music platform.
 

@@ -1,3 +1,4 @@
+from urllib import parse
 from typing import Dict
 from click import Choice
 import typer
@@ -9,6 +10,7 @@ from playlist_builder.accessor.youtube_accessor import YoutubeDAO
 from playlist_builder.enums import Platform
 from rich import print
 
+from playlist_builder.exceptions import PlaylistNotFoundException, BadInputException
 
 playlist_builder = typer.Typer(
     no_args_is_help=True, help="Build your music playlist across platforms!"
@@ -54,13 +56,56 @@ def build(
             prompt="Please choose the platform to log into",
             help="The music platform to log into",
         ),
-    ]
+    ],
+    new: Annotated[
+        bool,
+        typer.Option(
+            prompt="Would you like to build a new playlist?",
+            help="Choice whether to make a new playlist",
+        ),
+    ],
 ):
-    # 1. Ask user if they want to create a new playlist
-    #  1-1. If no, provide playlist link
-    #  1-2. Else, what is the title and privacy etc,..
-    # 2. What to build from? E.G., youtube video or another platform's playlist
-    print(ACCESSORS[platform.value].get_playlist())
+    playlist = None
+    if new:
+        # Create a new playlist
+        pass
+    else:
+        playlist_id = None
+        match platform:
+            case Platform.YOUTUBE:
+                playlist_url = typer.prompt(
+                    "Please provide the Youtube playlist url", type=str
+                )
+                playlist_id = extract_youtube_playlist_id(playlist_url)
+
+        try:
+            playlist = ACCESSORS[platform.value].get_playlist(playlist_id)
+            print(
+                f"[green]Fetched YouTube playlist with title [bold]{playlist.title}[/bold][/green] and [bold]{playlist.item_count}[/bold]"
+            )
+        except PlaylistNotFoundException:
+            print(
+                f"[red]Playlist was not found with id: [bold]{playlist_id}[/bold][/red]"
+            )
+            return
+
+    
+
+
+def extract_youtube_playlist_id(url: str) -> str:
+    url_data = parse.urlparse(url)
+
+    # Ensure the URL is of the correct format
+    if url_data.scheme != "https" or url_data.netloc != "www.youtube.com":
+        raise BadInputException(f"Invalid YouTube URL format: {url}")
+
+    query_params = parse.parse_qs(url_data.query)
+    playlist_id = query_params.get("list", None)
+
+    if not playlist_id:
+        raise BadInputException(f"No playlist ID found in URL: {url}")
+
+    return playlist_id[0]
 
 
 if __name__ == "__main__":

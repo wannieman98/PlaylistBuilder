@@ -1,25 +1,27 @@
-import json
-import os
-from typing import Dict, Any, Optional
-from playlist_builder.accessor import MusicPlatformDAO
+from typing import Dict, Any
+
 from google_auth_oauthlib.flow import InstalledAppFlow
-from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from rich import print
 
+from playlist_builder.accessor import MusicPlatformDAO
 from playlist_builder.enums import Platform
+from playlist_builder.exceptions import PlaylistNotFoundException
+from playlist_builder.models.youtube_model import (
+    YouTubeListAPIResponse,
+    YoutubePlaylist,
+)
 from playlist_builder.util import get_existing_credential, save_info_to_cache_file
-
 
 YOUTUBE_SERVICE_NAME = "youtube"
 API_VERSION = "v3"
 
 
 class YoutubeDAO(MusicPlatformDAO):
-    """Accessor to interact with Youtube Data API"""
+    """Accessor to interact with YouTube Data API"""
 
     @classmethod
-    def login(self):
+    def login(cls):
         existing_credential = get_existing_credential(platform=Platform.YOUTUBE)
         if not existing_credential or not existing_credential.valid:
             print("[bold red]No valid credential available, require login.[/bold red]")
@@ -35,18 +37,24 @@ class YoutubeDAO(MusicPlatformDAO):
                 "[bold green]Credential still valid, no log in required.[/bold green]"
             )
 
-    @staticmethod
-    def get_playlist():
+    def get_playlist(self, playlist_id: str) -> YoutubePlaylist:
         credentials = get_existing_credential(Platform.YOUTUBE)
         youtube_client = build(
             YOUTUBE_SERVICE_NAME, API_VERSION, credentials=credentials
         )
-        playlist_response = youtube_client.playlists().list(
-            part="snippet", id="PLQDMfMIIbFVXsH8AHZ5qgRCHC2v9Kjz8N", maxResults=1
+        playlist_request = youtube_client.playlists().list(
+            part="snippet, contentDetails", id=playlist_id, maxResults=1
         )
 
-        if playlist_response["pageInfo"]["totalResults"] < 1:
-            raise
+        playlist_response_json = playlist_request.execute()
+        playlist_response = YouTubeListAPIResponse.model_validate(
+            playlist_response_json
+        )
+
+        if playlist_response.page_info.total_results < 1:
+            raise PlaylistNotFoundException("There was no playlist with such Id")
+
+        return playlist_response.items[0]
 
     def add_to_playlist(self):
         pass
