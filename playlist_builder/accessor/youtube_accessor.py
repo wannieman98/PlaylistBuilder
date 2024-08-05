@@ -52,7 +52,7 @@ class YoutubeDAO(MusicPlatformDAO):
         )
 
         if playlist_response.page_info.total_results < 1:
-            raise PlaylistNotFoundException("There was no playlist with such Id")
+            raise PlaylistNotFoundException(f"There was no playlist with such Id {playlist_id}")
 
         return playlist_response.items[0]
 

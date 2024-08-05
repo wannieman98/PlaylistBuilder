@@ -22,13 +22,13 @@ ACCESSORS: Dict[str, MusicPlatformDAO] = {Platform.YOUTUBE.value: YoutubeDAO()}
 
 @playlist_builder.command()
 def login(
-    platform: Annotated[
-        Platform,
-        typer.Option(
-            prompt="Please choose the platform to log into",
-            help="The music platform to log into",
-        ),
-    ]
+        platform: Annotated[
+            Platform,
+            typer.Option(
+                prompt="Please choose the platform to log into",
+                help="The music platform to log into",
+            ),
+        ]
 ):
     """
     Log in to music platforms to build and sync playlists
@@ -50,20 +50,20 @@ def login(
 
 @playlist_builder.command()
 def build(
-    platform: Annotated[
-        Platform,
-        typer.Option(
-            prompt="Please choose the platform to log into",
-            help="The music platform to log into",
-        ),
-    ],
-    new: Annotated[
-        bool,
-        typer.Option(
-            prompt="Would you like to build a new playlist?",
-            help="Choice whether to make a new playlist",
-        ),
-    ],
+        platform: Annotated[
+            Platform,
+            typer.Option(
+                prompt="Please choose the platform to log into",
+                help="The music platform to log into",
+            ),
+        ],
+        new: Annotated[
+            bool,
+            typer.Option(
+                prompt="Would you like to build a new playlist?",
+                help="Choice whether to make a new playlist",
+            ),
+        ],
 ):
     playlist = None
     if new:
@@ -88,8 +88,6 @@ def build(
                 f"[red]Playlist was not found with id: [bold]{playlist_id}[/bold][/red]"
             )
             return
-
-    
 
 
 def extract_youtube_playlist_id(url: str) -> str:
